@@ -7,19 +7,22 @@ public class Page {
     private Activity context;
     private String pageName;
     private String pageText;
+    private String hizb;
+    private int pageNumber;
+    private String juzu;
 
-    public Page(String pageName, Activity context) {
+    Page(String pageName, Activity context) {
         this.pageName = pageName;
         this.context = context;
     }
 
-    public Page(String pageName, Activity context, String pageText) {
+    Page(String pageName, Activity context, String pageText) {
         this.pageText = pageText;
         this.pageName = pageName;
         this.context = context;
     }
 
-    public int getResId() {
+    int getResId() {
         return this.context.getResources().getIdentifier(pageName,"drawable", this.context.getPackageName());
     }
 
@@ -27,6 +30,16 @@ public class Page {
         return this.pageText;
     }
 
+    public String getPageNumber() {
+        return pageName;
+    }
 
+    public String getHizb() {
+        return hizb;
+    }
+
+    public String getJuzu() {
+        return juzu;
+    }
 
 }

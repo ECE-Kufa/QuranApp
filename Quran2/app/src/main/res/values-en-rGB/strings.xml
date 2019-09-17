@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Quran</string>
+    <string name="phahras">contents</string>
+    <string name="bookmark">bookmark</string>
+    <string name="show_text">show text</string>
+    <string name="bookmark_added">bookmark added</string>
+    <string name="bookmark_removed">bookmark removed</string>
+    <string name="there_is_no_text_available">sorry..\\nthere is no text available for this page>></string>
+</resources>
