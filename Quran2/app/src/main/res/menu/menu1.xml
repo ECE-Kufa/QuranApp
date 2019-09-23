@@ -10,6 +10,10 @@
         android:title="@string/show_text"
         />
 
+    <item android:id="@+id/go_to_bookmark"
+        android:title="الذهاب الى العلامة المرجعية"
+        />
+
     <item android:id="@+id/bookmark_item"
         android:title="@string/bookmark"
         android:icon="@drawable/ic_bookmark_border_black_24dp"

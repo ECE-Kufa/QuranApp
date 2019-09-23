@@ -6,4 +6,5 @@
     <string name="bookmark_added">تم وضع علامة مرجعية</string>
     <string name="bookmark_removed">تم إزالة العلامة المرجعية</string>
     <string name="there_is_no_text_available">عفواً../n لا يوجد نص متوفر لهذه الصفحة...</string>
+    <string name="no_bookmark_available">لا يوجد علامة مرجعية</string>
 </resources>

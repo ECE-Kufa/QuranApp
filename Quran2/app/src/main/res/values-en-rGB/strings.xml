@@ -7,4 +7,5 @@
     <string name="bookmark_added">bookmark added</string>
     <string name="bookmark_removed">bookmark removed</string>
     <string name="there_is_no_text_available">sorry..\\nthere is no text available for this page>></string>
+    <string name="no_bookmark_available">there is no bookmark available.</string>
 </resources>

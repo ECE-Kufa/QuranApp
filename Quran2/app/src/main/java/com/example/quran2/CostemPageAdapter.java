@@ -16,9 +16,10 @@ import java.util.ArrayList;
 
 import static com.example.quran2.MainActivity.bottomBar;
 import static com.example.quran2.MainActivity.toolbar;
+import static com.example.quran2.MainActivity.topBar;
 
 public class CostemPageAdapter extends PagerAdapter {
-    private int k = 0;
+    private boolean isVisible = false;
     private Context mCtx;
     private ArrayList<Page> mPages;
 
@@ -58,7 +59,7 @@ public class CostemPageAdapter extends PagerAdapter {
 
         /*
         for the click event, when the user clicks on the page.
-        You can neither implement the method OnTouchEvent of the ViewPager and put a code there to distinguash the click from the long click or the move.
+        You can ;neither implement the method OnTouchEvent of the ViewPager and put a code there to distinguash the click from the long click or the move.
          */
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,14 +67,14 @@ public class CostemPageAdapter extends PagerAdapter {
                 /*
                 For hiding the toolbar and the bottom bar when the screen is clicked.
                  */
-                if (k == 0) {
-                    k = 1;
+                if (!isVisible) {
+                    isVisible = true;
                     toolbar.setVisibility(View.VISIBLE);
-                    bottomBar.setVisibility(View.VISIBLE);
-                } else if (k == 1) {
-                    k = 0;
+//                    bottomBar.setVisibility(View.VISIBLE);
+                } else if (isVisible) {
+                    isVisible = false;
                     toolbar.setVisibility(View.GONE);
-                    bottomBar.setVisibility(View.GONE);
+//                    bottomBar.setVisibility(View.GONE);
                 }
             }
         });

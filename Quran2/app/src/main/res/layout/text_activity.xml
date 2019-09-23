@@ -3,14 +3,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".TextActivity">
+    tools:context=".TextActivity"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
 
+    >
+    <include
+        android:id="@+id/toolbar_text_activity"
+        layout="@layout/toolbar"
+        />
     <TextView
         android:id="@+id/page_text_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:textIsSelectable="true"
         />
+
 
 </LinearLayout>
