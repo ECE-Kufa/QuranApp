@@ -3,9 +3,11 @@ package com.example.quran2;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -17,6 +19,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import static com.example.quran2.Data.getPageText;
 import static com.example.quran2.Data.pages;
+import static com.example.quran2.Data.texts;
+import static com.example.quran2.Data.listsPosition;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
      Variables Declaration:::::::::::::::::::::::::::::::::::::
      */
     CostemPageAdapter costemPageAdapter;
-    int cPosition = 0;
+//    int cPosition = 0;
     MenuItem bookmarkItem;
     static Toolbar toolbar;
     static LinearLayout bottomBar, topBar;
@@ -81,8 +85,8 @@ public class MainActivity extends AppCompatActivity {
         /*
                 Setting up the TextViews in the bottom bar (at the initial time)::::::::::
          */
-//        cPosition = viewPager.getCurrentItem();
-        setTopBarContent(cPosition);
+//        listsPosition = viewPager.getCurrentItem();
+        setTopBarContent(listsPosition);
         /*
         Setting up the TextViews in the bottom bar::::::::::
         It should change when the page changes::::::::::::::::::::
@@ -95,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // if the current page is bookmarked and and the current icon is "not bookmarked", then set the icon to "bookmarked":
                 // this weird expression is how to compare two drawables.::: && bookmarkItem.getIcon().getConstantState().equals(getResources().getDrawable(R.drawable.ic_bookmark_border_black_24dp).getConstantState())
-                cPosition = position;
+                listsPosition = position;
                 if(bookmarkItem!= null) {
                     if (position == bookmarkPagePosition) {
                         bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
@@ -129,6 +133,26 @@ public class MainActivity extends AppCompatActivity {
 //            });
 //        }
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v("MainActivity", "on resume!!!!!!!!!");
+    }
+    @Override
+    public void finish() {
+        super.finish();
+        Log.v("MainActivity", "finish!!!!!!!!!!!!!!!!!!!!!");
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.v("MainActivity", "on destroy!!!!!!!!!");
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.v("MainActivity", "on stop!!!!!!!!!");
+    }
 
     /*
     For the menu in the Action bar:::
@@ -140,7 +164,23 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.menu1, menu);
         bookmarkItem = menu.findItem(R.id.bookmark_item);
         // setting the "bookmarked" icon if the current page has bookmark(for the start up of the app):
-        if(pages.get(cPosition).isBookmarked()) bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
+        if(pages.get(listsPosition).isBookmarked()) bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
+
+        MenuItem searchItem = menu.findItem(R.id.search_item);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                sendSearchIntent(ArabicSearch(texts, s));
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
+
         return true;
     }
 
@@ -154,24 +194,24 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.phahras), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.show_text_item:
-                sendTextEntent();
+                sendTextEntent(listsPosition);
                 Toast.makeText(MainActivity.this,  getResources().getString(R.string.show_text) + viewPager.getCurrentItem(), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.bookmark_item:
                 // if the page is not bookmarked, then add the bookmark:
-                if(!pages.get(cPosition).isBookmarked()){
+                if(!pages.get(listsPosition).isBookmarked()){
                     // set bookmark::::::
-                    setBookmark(cPosition);
+                    setBookmark(listsPosition);
                     //change icon::::::::::::::::
                     bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
                     //show toast:::::::::::
-                    Toast.makeText(MainActivity.this, getResources().getString(R.string.bookmark_added) + cPosition, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getResources().getString(R.string.bookmark_added) + listsPosition, Toast.LENGTH_SHORT).show();
                 }
                 else if (pages.get(viewPager.getCurrentItem()).isBookmarked()) {
                     // if it is bookmarked, remove the bookmark:
                     bookmarkItem.setIcon(R.drawable.ic_bookmark_border_black_24dp);
                     pages.get(viewPager.getCurrentItem()).setBookmarked(false);
-                    Toast.makeText(MainActivity.this,  getResources().getString(R.string.bookmark_removed) + cPosition, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,  getResources().getString(R.string.bookmark_removed) + listsPosition, Toast.LENGTH_SHORT).show();
 
                     // the code for removing a bookmark is placed here:::::::::::
                     bookmarkPagePosition = -1;
@@ -187,18 +227,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /*
-    I don't know what is this (^-^)::::
+     *For sending an intent to the TextActivity::::::::::::::
      */
-//    public static ArrayList<Page> getPages() {
-//        return pages;
-//    }
-
-    /*
-    For sending an intent to the TextActivity::::::::::::::
-     */
-    private void sendTextEntent(){
+    private void sendTextEntent(int position){
         Intent intent = new Intent(MainActivity.this, TextActivity.class);
-        intent.putExtra("pageText", pages.get(viewPager.getCurrentItem()).getPageText());
+        intent.putExtra("pageText", pages.get(position).getPageText());
         startActivity(intent);
     }
 
@@ -211,6 +244,97 @@ public class MainActivity extends AppCompatActivity {
         juzuTextView.setText(pages.get(position).getJuzu());
     }
 
+    /* normalize Method
+     * @return String
+     */
+    private String normalizer(String input) {
+
+//        Remove honorific sign
+//        input = input.replaceAll("\u0610", "");//ARABIC SIGN SALLALLAHOU ALAYHE WA SALLAM
+//        input = input.replaceAll("\u0611", "");//ARABIC SIGN ALAYHE ASSALLAM
+//        input = input.replaceAll("\u0612", "");//ARABIC SIGN RAHMATULLAH ALAYHE
+//        input = input.replaceAll("\u0613", "");//ARABIC SIGN RADI ALLAHOU ANHU
+//        input = input.replaceAll("\u0614", "");//ARABIC SIGN TAKHALLUS
+
+        //Remove koranic anotation
+        input = input.replaceAll("\u0615", "");//ARABIC SMALL HIGH TAH
+        input = input.replaceAll("\u0616", "");//ARABIC SMALL HIGH LIGATURE ALEF WITH LAM WITH YEH
+        input = input.replaceAll("\u0617", "");//ARABIC SMALL HIGH ZAIN
+        input = input.replaceAll("\u0618", "");//ARABIC SMALL FATHA
+        input = input.replaceAll("\u0619", "");//ARABIC SMALL DAMMA
+        input = input.replaceAll("\u061A", "");//ARABIC SMALL KASRA
+        input = input.replaceAll("\u06D6", "");//ARABIC SMALL HIGH LIGATURE SAD WITH LAM WITH ALEF MAKSURA
+        input = input.replaceAll("\u06D7", "");//ARABIC SMALL HIGH LIGATURE QAF WITH LAM WITH ALEF MAKSURA
+        input = input.replaceAll("\u06D8", "");//ARABIC SMALL HIGH MEEM INITIAL FORM
+        input = input.replaceAll("\u06D9", "");//ARABIC SMALL HIGH LAM ALEF
+        input = input.replaceAll("\u06DA", "");//ARABIC SMALL HIGH JEEM
+        input = input.replaceAll("\u06DB", "");//ARABIC SMALL HIGH THREE DOTS
+        input = input.replaceAll("\u06DC", "");//ARABIC SMALL HIGH SEEN
+        input = input.replaceAll("\u06DD", "");//ARABIC END OF AYAH
+        input = input.replaceAll("\u06DE", "");//ARABIC START OF RUB EL HIZB
+        input = input.replaceAll("\u06DF", "");//ARABIC SMALL HIGH ROUNDED ZERO
+        input = input.replaceAll("\u06E0", "");//ARABIC SMALL HIGH UPRIGHT RECTANGULAR ZERO
+        input = input.replaceAll("\u06E1", "");//ARABIC SMALL HIGH DOTLESS HEAD OF KHAH
+        input = input.replaceAll("\u06E2", "");//ARABIC SMALL HIGH MEEM ISOLATED FORM
+        input = input.replaceAll("\u06E3", "");//ARABIC SMALL LOW SEEN
+        input = input.replaceAll("\u06E4", "");//ARABIC SMALL HIGH MADDA
+        input = input.replaceAll("\u06E5", "");//ARABIC SMALL WAW
+        input = input.replaceAll("\u06E6", "");//ARABIC SMALL YEH
+        input = input.replaceAll("\u06E7", "");//ARABIC SMALL HIGH YEH
+        input = input.replaceAll("\u06E8", "");//ARABIC SMALL HIGH NOON
+        input = input.replaceAll("\u06E9", "");//ARABIC PLACE OF SAJDAH
+        input = input.replaceAll("\u06EA", "");//ARABIC EMPTY CENTRE LOW STOP
+        input = input.replaceAll("\u06EB", "");//ARABIC EMPTY CENTRE HIGH STOP
+        input = input.replaceAll("\u06EC", "");//ARABIC ROUNDED HIGH STOP WITH FILLED CENTRE
+        input = input.replaceAll("\u06ED", "");//ARABIC SMALL LOW MEEM
+
+        //Remove tatweel
+        input = input.replaceAll("\u0640", "");
+
+        //Remove tashkeel
+        input=input.replaceAll("\u064B", "");//ARABIC FATHATAN
+        input=input.replaceAll("\u064C", "");//ARABIC DAMMATAN
+        input=input.replaceAll("\u064D", "");//ARABIC KASRATAN
+        input=input.replaceAll("\u064E", "");//ARABIC FATHA
+        input=input.replaceAll("\u064F", "");//ARABIC DAMMA
+        input=input.replaceAll("\u0650", "");//ARABIC KASRA
+        input=input.replaceAll("\u0651", "");//ARABIC SHADDA
+        input=input.replaceAll("\u0652", "");//ARABIC SUKUN
+        input=input.replaceAll("\u0653", "");//ARABIC MADDAH ABOVE
+        input=input.replaceAll("\u0654", "");//ARABIC HAMZA ABOVE
+        input=input.replaceAll("\u0655", "");//ARABIC HAMZA BELOW
+        input=input.replaceAll("\u0656", "");//ARABIC SUBSCRIPT ALEF
+        input=input.replaceAll("\u0657", "");//ARABIC INVERTED DAMMA
+        input=input.replaceAll("\u0658", "");//ARABIC MARK NOON GHUNNA
+        input=input.replaceAll("\u0659", "");//ARABIC ZWARAKAY
+        input=input.replaceAll("\u065A", "");//ARABIC VOWEL SIGN SMALL V ABOVE
+        input=input.replaceAll("\u065B", "");//ARABIC VOWEL SIGN INVERTED SMALL V ABOVE
+        input=input.replaceAll("\u065C", "");//ARABIC VOWEL SIGN DOT BELOW
+        input=input.replaceAll("\u065D", "");//ARABIC REVERSED DAMMA
+        input=input.replaceAll("\u065E", "");//ARABIC FATHA WITH TWO DOTS
+        input=input.replaceAll("\u065F", "");//ARABIC WAVY HAMZA BELOW
+        input=input.replaceAll("\u0670", "");//ARABIC LETTER SUPERSCRIPT ALEF
+
+        //Replace Waw Hamza Above by Waw
+//        input=input.replaceAll("\u0624", "\u0648");
+
+        //Replace Ta Marbuta by Ha
+//        input=input.replaceAll("\u0629", "\u0647");
+
+        //Replace Ya
+        // and Ya Hamza Above by Alif Maksura
+        input=input.replaceAll("\u064A", "\u0649");
+        input=input.replaceAll("\u0626", "\u0649");
+
+        // Replace Alifs with Hamza Above/Below
+        // and with Madda Above by Alif
+        input = input.replaceAll("\u0622", "\u0627");
+        input=input.replaceAll("\u0623", "\u0627");
+        input=input.replaceAll("\u0625", "\u0627");
+
+        return input;
+    }
+
     private void setBookmark(int bookmarkPosition) {
         // the code for setting a bookmark is placed here::::::::
         // change the boolean variable to be true and change the position of bookmarkPagePosition:::::::::;
@@ -218,11 +342,6 @@ public class MainActivity extends AppCompatActivity {
         if (bookmarkPosition != -1) {
             pages.get(bookmarkPosition).setBookmarked(true);
         }
-    }
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.v("MainActivity", "on stop!!!!!!!!!");
     }
 
     @Override
@@ -236,45 +355,46 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt("bookmarkPagePosition", bookmarkPagePosition);
         editor.apply();
     }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.v("MainActivity", "on destroy!!!!!!!!!");
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
         Log.v("MainActivity", "on start!!!!!!!!!");
 
         SharedPreferences sh = getPreferences(MODE_PRIVATE);
-        cPosition = sh.getInt("position", 0);
-        viewPager.setCurrentItem(cPosition);
+
+        // Because when you click on an item in the search activity ListView,
+        // it will change the value of @listsPosition to the position of the search result you clicked.
+        // and also the number 486 is the number of total pages, and there is no such position in the lists.
+        if(listsPosition == 486) listsPosition = sh.getInt("position", 0);
+        viewPager.setCurrentItem(listsPosition);
         setBookmark(sh.getInt("bookmarkPagePosition", -1));
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.v("MainActivity", "on resume!!!!!!!!!");
+    /**
+     * Searches for word in all elements of the input list.
+     * @param word the word you want to search for.
+     * @param input the input list you want to search in.
+     * @return the indexes of elements in input list which are have the word.
+     */
+    private ArrayList<Integer> ArabicSearch(String[] input, String word){
+        ArrayList<Integer> outputArray= new ArrayList<>();
+
+        // for each element in input::::::
+        for(int i = 0; i < input.length; i++){
+            String normalizedElement = normalizer(input[i]);
+            if(normalizedElement.contains(word)){
+                outputArray.add(i);
+            }
+        }
+        return outputArray;
     }
 
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        Log.v("MainActivity", "on post resume!!!!!!!!!");
+    private void sendSearchIntent(ArrayList<Integer> searchResultsList){
+        Intent intent = new Intent(this, SearchActivity.class);
+        intent.putExtra("search list", searchResultsList);
+        startActivity(intent);
     }
 
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        Log.v("MainActivity", "on post create!!!!!!!!!");
-    }
 
-    @Override
-    public void finish() {
-        super.finish();
-        Log.v("MainActivity", "finish!!!!!!!!!!!!!!!!!!!!!");
-    }
+
 }

@@ -17,7 +17,14 @@
     <item android:id="@+id/bookmark_item"
         android:title="@string/bookmark"
         android:icon="@drawable/ic_bookmark_border_black_24dp"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
+        />
+
+    <item android:id="@+id/search_item"
+        android:title = "بحث"
+        android:icon="@drawable/ic_search_black_24dp"
+        app:showAsAction="always|collapseActionView"
+        app:actionViewClass="android.support.v7.widget.SearchView"
         />
 
 
