@@ -1,22 +1,20 @@
 package com.example.quran2;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
-import java.util.Date;
-
 import static com.example.quran2.Data.getPageText;
 import static com.example.quran2.Data.pages;
 
@@ -25,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
     /*
      Variables Declaration:::::::::::::::::::::::::::::::::::::
      */
+    CostemPageAdapter costemPageAdapter;
+    int cPosition = 0;
     MenuItem bookmarkItem;
     static Toolbar toolbar;
     static LinearLayout bottomBar, topBar;
@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v("MainActivity", "on create!!!!!!!!!");
         setContentView(R.layout.activity_main);
         /*
         setting the costomized toolbar:::::::::::::::::::::::::::::::::
@@ -74,13 +75,13 @@ public class MainActivity extends AppCompatActivity {
         /*
         Setting the adapter for the ViewPager:::::::::::::::::
          */
-        CostemPageAdapter costemPageAdapter = new CostemPageAdapter(MainActivity.this, pages);
+        costemPageAdapter = new CostemPageAdapter(MainActivity.this, pages);
         viewPager.setAdapter(costemPageAdapter);
 
         /*
                 Setting up the TextViews in the bottom bar (at the initial time)::::::::::
          */
-        int cPosition = viewPager.getCurrentItem();
+//        cPosition = viewPager.getCurrentItem();
         setTopBarContent(cPosition);
         /*
         Setting up the TextViews in the bottom bar::::::::::
@@ -94,11 +95,13 @@ public class MainActivity extends AppCompatActivity {
 
                 // if the current page is bookmarked and and the current icon is "not bookmarked", then set the icon to "bookmarked":
                 // this weird expression is how to compare two drawables.::: && bookmarkItem.getIcon().getConstantState().equals(getResources().getDrawable(R.drawable.ic_bookmark_border_black_24dp).getConstantState())
-                if(position == bookmarkPagePosition ){
-                    bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
-                }
-                else{
-                    bookmarkItem.setIcon(R.drawable.ic_bookmark_border_black_24dp);
+                cPosition = position;
+                if(bookmarkItem!= null) {
+                    if (position == bookmarkPagePosition) {
+                        bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
+                    } else {
+                        bookmarkItem.setIcon(R.drawable.ic_bookmark_border_black_24dp);
+                    }
                 }
 
             }
@@ -132,11 +135,12 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.v("MainActivity", "on create options menu!!!!!!!!!");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu1, menu);
         bookmarkItem = menu.findItem(R.id.bookmark_item);
         // setting the "bookmarked" icon if the current page has bookmark(for the start up of the app):
-        if(pages.get(viewPager.getCurrentItem()).isBookmarked()) bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
+        if(pages.get(cPosition).isBookmarked()) bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
         return true;
     }
 
@@ -152,22 +156,22 @@ public class MainActivity extends AppCompatActivity {
             case R.id.show_text_item:
                 sendTextEntent();
                 Toast.makeText(MainActivity.this,  getResources().getString(R.string.show_text) + viewPager.getCurrentItem(), Toast.LENGTH_SHORT).show();
-                 break;
+                break;
             case R.id.bookmark_item:
                 // if the page is not bookmarked, then add the bookmark:
-                if(!pages.get(viewPager.getCurrentItem()).isBookmarked()){
+                if(!pages.get(cPosition).isBookmarked()){
+                    // set bookmark::::::
+                    setBookmark(cPosition);
+                    //change icon::::::::::::::::
                     bookmarkItem.setIcon(R.drawable.ic_bookmark_black_24dp);
-                    pages.get(viewPager.getCurrentItem()).setBookmarked(true);
-                    Toast.makeText(MainActivity.this, getResources().getString(R.string.bookmark_added) + viewPager.getCurrentItem(), Toast.LENGTH_SHORT).show();
-
-                    // the code for setting a bookmark is placed here::::::::
-                    bookmarkPagePosition = viewPager.getCurrentItem();
+                    //show toast:::::::::::
+                    Toast.makeText(MainActivity.this, getResources().getString(R.string.bookmark_added) + cPosition, Toast.LENGTH_SHORT).show();
                 }
                 else if (pages.get(viewPager.getCurrentItem()).isBookmarked()) {
                     // if it is bookmarked, remove the bookmark:
                     bookmarkItem.setIcon(R.drawable.ic_bookmark_border_black_24dp);
                     pages.get(viewPager.getCurrentItem()).setBookmarked(false);
-                    Toast.makeText(MainActivity.this,  getResources().getString(R.string.bookmark_removed) + viewPager.getCurrentItem(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,  getResources().getString(R.string.bookmark_removed) + cPosition, Toast.LENGTH_SHORT).show();
 
                     // the code for removing a bookmark is placed here:::::::::::
                     bookmarkPagePosition = -1;
@@ -207,5 +211,70 @@ public class MainActivity extends AppCompatActivity {
         juzuTextView.setText(pages.get(position).getJuzu());
     }
 
+    private void setBookmark(int bookmarkPosition) {
+        // the code for setting a bookmark is placed here::::::::
+        // change the boolean variable to be true and change the position of bookmarkPagePosition:::::::::;
+        bookmarkPagePosition = bookmarkPosition;
+        if (bookmarkPosition != -1) {
+            pages.get(bookmarkPosition).setBookmarked(true);
+        }
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.v("MainActivity", "on stop!!!!!!!!!");
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.v("MainActivity", "on pause!!!!!!!!!");
+
+        SharedPreferences sp = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putInt("position", viewPager.getCurrentItem());
+        editor.putInt("bookmarkPagePosition", bookmarkPagePosition);
+        editor.apply();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.v("MainActivity", "on destroy!!!!!!!!!");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.v("MainActivity", "on start!!!!!!!!!");
+
+        SharedPreferences sh = getPreferences(MODE_PRIVATE);
+        cPosition = sh.getInt("position", 0);
+        viewPager.setCurrentItem(cPosition);
+        setBookmark(sh.getInt("bookmarkPagePosition", -1));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v("MainActivity", "on resume!!!!!!!!!");
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        Log.v("MainActivity", "on post resume!!!!!!!!!");
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        Log.v("MainActivity", "on post create!!!!!!!!!");
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        Log.v("MainActivity", "finish!!!!!!!!!!!!!!!!!!!!!");
+    }
 }
