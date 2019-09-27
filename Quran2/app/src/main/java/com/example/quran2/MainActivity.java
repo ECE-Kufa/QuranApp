@@ -17,9 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
+
+import static com.example.quran2.Data.getFullTextsList;
 import static com.example.quran2.Data.getPageText;
 import static com.example.quran2.Data.pages;
-import static com.example.quran2.Data.texts;
 import static com.example.quran2.Data.listsPosition;
 
 public class MainActivity extends AppCompatActivity {
@@ -86,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
                 Setting up the TextViews in the bottom bar (at the initial time)::::::::::
          */
 //        listsPosition = viewPager.getCurrentItem();
-        setTopBarContent(listsPosition);
+        if(listsPosition != 486)setTopBarContent(listsPosition);
+        else setTopBarContent(0);
         /*
         Setting up the TextViews in the bottom bar::::::::::
         It should change when the page changes::::::::::::::::::::
@@ -171,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                sendSearchIntent(ArabicSearch(texts, s));
+                sendSearchIntent(ArabicSearch(getFullTextsList(), s));
                 return false;
             }
 
@@ -323,14 +325,14 @@ public class MainActivity extends AppCompatActivity {
 
         //Replace Ya
         // and Ya Hamza Above by Alif Maksura
-        input=input.replaceAll("\u064A", "\u0649");
-        input=input.replaceAll("\u0626", "\u0649");
+//        input=input.replaceAll("\u064A", "\u0649");
+//        input=input.replaceAll("\u0626", "\u0649");
 
         // Replace Alifs with Hamza Above/Below
         // and with Madda Above by Alif
-        input = input.replaceAll("\u0622", "\u0627");
-        input=input.replaceAll("\u0623", "\u0627");
-        input=input.replaceAll("\u0625", "\u0627");
+//        input = input.replaceAll("\u0622", "\u0627");
+//        input=input.replaceAll("\u0623", "\u0627");
+//        input=input.replaceAll("\u0625", "\u0627");
 
         return input;
     }
@@ -376,22 +378,33 @@ public class MainActivity extends AppCompatActivity {
      * @param input the input list you want to search in.
      * @return the indexes of elements in input list which are have the word.
      */
-    private ArrayList<Integer> ArabicSearch(String[] input, String word){
-        ArrayList<Integer> outputArray= new ArrayList<>();
+    private ArrayList<SearchResult> ArabicSearch(String[] input, String word){
+        ArrayList<SearchResult> outputArray= new ArrayList<>();
 
         // for each element in input::::::
         for(int i = 0; i < input.length; i++){
             String normalizedElement = normalizer(input[i]);
             if(normalizedElement.contains(word)){
-                outputArray.add(i);
+//                outputArray.add(i);
+                String previosAyaNumber = "";
+                int j = normalizedElement.indexOf(word), k = 0;
+                // remove the second condition and search for a word in the firs Aya in a page, and see what happens!!!
+                // that because there is no Aya number at the beginning of the page...!
+                while(normalizedElement.charAt(j) != '\uFD3F' && j > 0) j--;
+                k = j + 1;
+                while(normalizedElement.charAt(k)!= '\uFD3E') k++;
+                previosAyaNumber = normalizedElement.substring(j+1, k);
+
+                outputArray.add(new SearchResult(previosAyaNumber, i));
             }
         }
         return outputArray;
     }
 
-    private void sendSearchIntent(ArrayList<Integer> searchResultsList){
+    private void sendSearchIntent(ArrayList<SearchResult> searchResultsList){
         Intent intent = new Intent(this, SearchActivity.class);
-        intent.putExtra("search list", searchResultsList);
+
+        intent.putExtra("search results list", searchResultsList);
         startActivity(intent);
     }
 

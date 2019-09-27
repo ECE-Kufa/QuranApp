@@ -10,6 +10,7 @@ import android.app.Activity;
     private String hizb;
     private String juzu;
     private boolean isBookmarked = false;
+    private String surah = "سورة البقرة";
 
 
      Page(String pageName, Activity context) {
@@ -51,5 +52,7 @@ import android.app.Activity;
         return juzu;
     }
 
-
-}
+     public String getSurah() {
+         return surah;
+     }
+ }

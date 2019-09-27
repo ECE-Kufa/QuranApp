@@ -6,19 +6,16 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.example.quran2.R;
 
 import java.util.ArrayList;
 
+import static com.example.quran2.Data.getFullTextsList;
 import static com.example.quran2.Data.listsPosition;
-import static com.example.quran2.Data.pages;
-import static com.example.quran2.Data.texts;
+
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -29,34 +26,37 @@ public class SearchActivity extends AppCompatActivity {
 
         ListView listView = (ListView) findViewById(R.id.search_activity_layout);
 
-//        Toolbar textActivityToolbar = (Toolbar) findViewById(R.id.toolbar_text_activity);
-//        setSupportActionBar(textActivityToolbar);
-//
-//        ActionBar ab = getSupportActionBar();
-//        ab.setDisplayHomeAsUpEnabled(true);
+        Toolbar textActivityToolbar = (Toolbar) findViewById(R.id.search_activity_toolbar);
+        setSupportActionBar(textActivityToolbar);
+
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
 
         Bundle extras = getIntent().getExtras();
-        final ArrayList<Integer> searchResults = extras.getIntegerArrayList("search list");
+        final ArrayList<SearchResult> searchResults = extras.getParcelableArrayList("search results list");
 
-        ArrayList<String> searchParagraphes = new ArrayList<>();
-        if (searchResults != null) {
-            for (int i :
-                    searchResults) {
-                searchParagraphes.add(texts[i].substring(0, 102) + "...");
-//                searchParagraphes.add(pages.get(i).getPageText().substring(0, 102) + "...");
-            }
+//        ArrayList<SearchResult> searchParagraphes = new ArrayList<>();
+//        if (searchResults != null) {
+//            for (int i :
+//                    searchResults) {
+//                searchParagraphes.add(getFullTextsList()[i].substring(0, 102) + "...");
+////                searchParagraphes.add(pages.get(i).getPageText().substring(0, 102) + "...");
+//            }
 
-            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, searchParagraphes);
+//        final ArrayList<SearchResult> searchResults = new ArrayList<>();
+//        for (int i = 0; i < resultsAyat.size(); i++) {
+//            searchResults.add(new SearchResult(resutlsAyaNumbers.get(i), resultsAyat.get(i), resultsPagePositions.get(i)));
+//        }
+
+            SearchArrayAdapter arrayAdapter = new SearchArrayAdapter (this, searchResults);
             listView.setAdapter(arrayAdapter);
 
-            listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
-                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    listsPosition = searchResults.get(position);
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    listsPosition = searchResults.get(position).getPositionOfPage();
                     finish();
-                    return false;
                 }
             });
         }
     }
-}
